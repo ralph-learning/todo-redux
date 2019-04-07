@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
+import { connect  } from 'react-redux';
 import {
   Platform,
   StyleSheet,
@@ -8,45 +9,40 @@ import {
   TouchableOpacity,
   ScrollView
 } from 'react-native';
+import { ADD_TODO, CHANGE_INPUT } from './reducers'
 
-export default class Todo extends Component<Props> {
-  constructor(props) {
-    super(props);
-    this.state = {
-      todos: ['Hello'],
-      newTodo: '',
-    };
+const Todo = ({todos, newTodo, onHandleChangeInput, addTodo}) => (
+  <View style={styles.container}>
+    <TextInput style={styles.input} value={newTodo} onChangeText={onHandleChangeInput} />
+
+    <TouchableOpacity onPress={() => addTodo(newTodo)}>
+      <Text style={styles.button}>Add</Text>
+    </TouchableOpacity>
+
+    <ScrollView style={styles.list}>
+      {
+        todos.map((todo, id) => <Text key={id}>{todo}</Text>)
+      }
+    </ScrollView>
+  </View>
+);
+
+const mapStateToProps = (state) => ({
+  todos: state.todos,
+  newTodo: state.newTodo,
+});
+
+const mapActionsToProps = (dispatch) => ({
+  addTodo(todo) {
+    dispatch({ type: ADD_TODO, payload: todo });
+    dispatch({ type: CHANGE_INPUT, payload: '' });
+  },
+  onHandleChangeInput(text) {
+    dispatch({type: CHANGE_INPUT, payload: text});
   }
+})
 
-  onHandleAddButton = () => {
-    const newTodos = this.state.todos;
-    newTodos.push(this.state.newTodo);
-
-    this.setState({ todos: newTodos, newTodo: '' });
-  }
-
-  onHandleChangeText = (text) => {
-    this.setState({ newTodo: text });
-  }
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <TextInput style={styles.input} value={this.state.newTodo} onChangeText={this.onHandleChangeText} />
-
-        <TouchableOpacity onPress={this.onHandleAddButton}>
-          <Text style={styles.button}>Add</Text>
-        </TouchableOpacity>
-
-        <ScrollView style={styles.list}>
-          {
-            this.state.todos.map((todo, id) => <Text key={id}>{todo}</Text>)
-          }
-        </ScrollView>
-      </View>
-    );
-  }
-}
+export default connect(mapStateToProps, mapActionsToProps)(Todo);
 
 const styles = StyleSheet.create({
   container: {
